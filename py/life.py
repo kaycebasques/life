@@ -107,6 +107,7 @@ class Cell:
             print(f'neighbor {index}: {neighbor.row} {neighbor.col}')
         print()
 
+    # the current init.txt has a bug
     def iterate(self):
         alive_neighbors = 0
         next_alive = False
