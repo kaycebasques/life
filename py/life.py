@@ -8,24 +8,22 @@ class Game:
     def __init__(self, filename):
         self.world = World(filename=filename)
 
-    # def __str__(self):
-    #     world = ''
-    #     for line in self.world:
-    #         for cell in line:
-    #             world += 'o' if cell.alive else ' '
-    #         world += '\n'
-    #     return world
+    def iterate(self):
+        self.world.iterate()
+
+    def __str__(self):
+        return self.world.__str__()
 
 class World:
 
     def __init__(self, filename=None, previous=None):
         if filename:
-            self.world = self._init_from_file(filename)
+            self.cells = self._init_from_file(filename)
         else:
-            self.world = self._init_from_previous(previous)
+            self.cells = self._init_from_previous(previous)
 
     def _init_from_file(self, filename):
-        world = []
+        cells = []
         with open(filename, 'r') as file:
             lines = file.readlines()
         for row_index, line in enumerate(lines):
@@ -35,22 +33,38 @@ class World:
                     continue
                 alive = True if char == 'o' else False
                 row.append(Cell(alive, row_index, col_index))
-            world.append(row)
-        row_len = len(world) - 1
-        col_len = len(world[0]) - 1
-        for row in world:
+            cells.append(row)
+        row_len = len(cells) - 1
+        col_len = len(cells[0]) - 1
+        for row in cells:
             for cell in row:
-                cell.set_neighbors(world, row_len, col_len)
-                cell.print_neighbors()
-        return world
+                cell.set_neighbors(cells, row_len, col_len)
+                # cell.print_neighbors()
+        return cells
 
     def _init_from_previous(self, previous):
         pass
 
+    def iterate(self):
+        for row in self.cells:
+            for cell in row:
+                cell.iterate()
+
+    def __str__(self):
+        current_iteration = len(self.cells[0][0].alive) - 1
+        msg = f'iteration {current_iteration}\n'
+        for row in self.cells:
+            for cell in row:
+                msg += 'o' if cell.alive[current_iteration] else '.'
+            msg += '\n'
+        msg += '\n'
+        return msg
+ 
+
 class Cell:
 
     def __init__(self, alive, row, col):
-        self.alive = alive
+        self.alive = [alive]
         self.row = row
         self.col = col
         self.neighbors = []
@@ -79,8 +93,29 @@ class Cell:
             print(f'neighbor {index}: {neighbor.row} {neighbor.col}')
         print()
 
+    def iterate(self):
+        alive_neighbors = 0
+        next_alive = False
+        current_iteration = len(self.alive) - 1
+        current_alive = self.alive[current_iteration]
+        for neighbor in self.neighbors:
+            if neighbor.alive[current_iteration]:
+                alive_neighbors += 1
+        if alive_neighbors <= 1:
+            next_alive = False
+        elif (alive_neighbors == 2 or alive_neighbors == 3) and current_alive:
+            next_alive = True
+        elif alive_neighbors == 3 and not current_alive:
+            next_alive = True
+        else:  # 4+ neighbors
+            next_alive = False
+        self.alive.append(next_alive)
+
 game = Game('init.txt')
 print(game)
+for i in range(5):
+    game.iterate()
+    print(game)
 
 # stdscr = curses.initscr()
 # 
