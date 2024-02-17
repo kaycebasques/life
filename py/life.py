@@ -11,6 +11,9 @@ class Game:
     def iterate(self):
         self.world.iterate()
 
+    def render(self):
+        return self.world.render()
+
     def __str__(self):
         return self.world.__str__()
 
@@ -49,6 +52,17 @@ class World:
         for row in self.cells:
             for cell in row:
                 cell.iterate()
+
+    def render(self):
+        current_iteration = len(self.cells[0][0].alive) - 1
+        out = []
+        for row in self.cells:
+            cells = ''
+            for cell in row:
+                cells += 'o' if cell.alive[current_iteration] else '.'
+            out.append(cells)
+        return out
+    
 
     def __str__(self):
         current_iteration = len(self.cells[0][0].alive) - 1
@@ -111,21 +125,23 @@ class Cell:
             next_alive = False
         self.alive.append(next_alive)
 
-game = Game('init.txt')
-print(game)
-for i in range(5):
-    game.iterate()
-    print(game)
+# print(game)
+# for i in range(5):
+#     game.iterate()
+#     print(game)
 
-# stdscr = curses.initscr()
-# 
-# for index, line in enumerate(lines):
-#     stdscr.addstr(index, 0, line)
-# 
-# stdscr.refresh()
-# time.sleep(3)
-# 
-# curses.endwin()
+game = Game('init.txt')
+stdscr = curses.initscr()
+
+for i in range(10):
+    for index, line in enumerate(game.render()):
+        stdscr.addstr(index, 0, line)
+        game.iterate()
+    stdscr.refresh()
+    time.sleep(1)
+
+curses.endwin()
+
 # 
 # 0 or 1 neighbors = death by underpopulation
 # 2 or 3 neighbors = OK
